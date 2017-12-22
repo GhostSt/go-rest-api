@@ -3,36 +3,31 @@ package main
 import (
 	"fmt"
 
-	"github.com/kylelemons/go-gypsy/yaml"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/julienschmidt/httprouter"
+	"net/http"
 )
 
+type UserController struct {
+	Controller
+	registry *registry
+}
+
 func main() {
-	registry = createRegistry()
+	registry := setup()
 
-	loadConfig(registry)
+	fmt.Println("Starting server on :8080")
 
-	db, err := SetupDatabase(config)
-
-	fmt.Println("test")
-	fmt.Println(db)
-	fmt.Println(err)
+	http.ListenAndServe(":8080", registry.router)
 }
 
-func createRegistry () *registry {
-	return &registry{}
+func configureRoutes(registry *registry)  {
+	c := &UserController{registry: registry}
+
+	registry.router.GET("/api/user", c.Perform(c.getList))
+	registry.router.POST("/api/user", c.Perform(c.AddUser))
+
 }
 
-func loadConfig(registry *registry) {
-	file, err := yaml.ReadFile("config.yml")
-
-	if (err != nil) {
-		panic(err)
-	}
-
-	registry.config = file
-}
-
-type registry struct {
-	config *yaml.File
+func (c *Controller) Index(rw http.ResponseWriter, r *http.Request, params httprouter.Params) error {
+	return nil
 }

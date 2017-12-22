@@ -1,0 +1,4 @@
+database:
+    version: sqlite3
+    path:   db.sqlite
+    schema: resources/migration.sql

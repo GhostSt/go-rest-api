@@ -1,3 +1,0 @@
-database:
-    version: sqlite3
-    path: db.sqlite
