@@ -25,9 +25,6 @@ func configureRoutes(registry *registry)  {
 
 	registry.router.GET("/api/user", c.Perform(c.getList))
 	registry.router.POST("/api/user", c.Perform(c.AddUser))
+	registry.router.POST("/api/user/:id", c.Perform(c.getUser))
 
-}
-
-func (c *Controller) Index(rw http.ResponseWriter, r *http.Request, params httprouter.Params) error {
-	return nil
 }

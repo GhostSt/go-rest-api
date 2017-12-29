@@ -15,11 +15,10 @@ type User struct {
 	Email string `json:"email"`
 }
 
-type UserService struct {
+type UserModel struct {
 	*registry
 }
 
-// Add user controller
 func (c UserController) AddUser(rw http.ResponseWriter, r *http.Request, params httprouter.Params) error  {
 	var user User
 	body, err := ioutil.ReadAll(r.Body)
@@ -35,7 +34,7 @@ func (c UserController) AddUser(rw http.ResponseWriter, r *http.Request, params 
     	return err
 	}
 
-	userService := UserService{registry: c.registry}
+	userService := UserModel{registry: c.registry}
 
 	if !userService.IsUniqueEmail(user) {
 		c.registry.render.JSON(rw, 400, map[string]string{"message": "User exists"})
@@ -48,11 +47,10 @@ func (c UserController) AddUser(rw http.ResponseWriter, r *http.Request, params 
 	return nil
 }
 
-// Get user controller
 func (c UserController) getList(rw http.ResponseWriter, r *http.Request, params httprouter.Params) error {
-	userService := UserService{registry: c.registry}
+	userModel := UserModel{registry: c.registry}
 
-	list := userService.getList()
+	list := userModel.getList()
 
 	rw.Header().Add("Content-Type", "applicant/json111")
 	json.NewEncoder(rw).Encode(list)
@@ -60,8 +58,20 @@ func (c UserController) getList(rw http.ResponseWriter, r *http.Request, params 
 	return nil
 }
 
+func (c UserController) getUser(rw http.ResponseWriter, r *http.Request, params httprouter.Params) error {
+	id := params.ByName("id")
+
+	userModel := UserModel{registry: c.registry}
+
+	user, err = userModel.getUser(id)
+
+	if err != nil {
+
+	}
+}
+
 // Checks if user email exist in database
-func (u *UserService) IsUniqueEmail(user User) bool  {
+func (u *UserModel) IsUniqueEmail(user User) bool  {
 	err := u.registry.db.QueryRow("SELECT id FROM user WHERE email = ?", user.Email).Scan()
 
 	if (err != nil) {
@@ -72,7 +82,7 @@ func (u *UserService) IsUniqueEmail(user User) bool  {
 }
 
 // Adds user to database
-func (u *UserService) addUser(user User)  {
+func (u *UserModel) addUser(user User)  {
 	db := u.registry.db
 
 	transaction, err := db.Begin()
@@ -100,7 +110,7 @@ func (u *UserService) addUser(user User)  {
 }
 
 // Gets list of users
-func (u *UserService) getList() []User {
+func (u *UserModel) getList() []User {
 	db := u.registry.db
 
 	var users []User
@@ -129,4 +139,25 @@ func (u *UserService) getList() []User {
 	}
 
 	return users
+}
+
+// Gets user by id
+func (u *UserModel) getUser(id string) User {
+	db := u.registry.db
+
+	var user User
+
+	row, err := db.Query("SELECT * FROM user WHERE id = ?", id)
+
+	if err != nil {
+		panic(nil)
+	}
+
+	err = row.Scan(&user.Id, &user.Email, &user.Name)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return User{}
 }
